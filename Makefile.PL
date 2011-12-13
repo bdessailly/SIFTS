@@ -7,6 +7,8 @@ license  'perl';
 
 build_requires 'Test::More';
 
+install_script 'domid_to_pdbchains';
+
 auto_install;
 
 WriteAll;

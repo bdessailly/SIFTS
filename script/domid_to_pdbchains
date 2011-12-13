@@ -1,0 +1,61 @@
+#!/usr/bin/env perl
+
+######################################################################
+##
+##    Reads a list of CATH domain IDs and output the domain IDs and 
+##    the different PDB chain IDs coming from the same protein.  
+##
+##    Created by Benoit H Dessailly, 2011-12-13.
+##    Updated, 2011-12-13.
+##
+######################################################################
+
+use strict;
+use warnings;
+
+use File::Basename;
+use Getopt::Std;
+
+
+## cmd line args.
+my %arg;
+getopts( 'h', \%arg );
+&help if ( defined $arg{'h'} );
+
+
+exit;
+
+
+######################################################################
+## Output usage message.
+sub help {
+    my $script = basename $0;
+    
+    print <<"END_USAGE";
+    
+  Usage: $script [Options]
+  
+  Options:
+  
+    -h                    Output usage message.
+    
+    -i filename           Input file with list of domain IDs.
+                          Required
+                          
+    -o filename           Output file with domain IDs and equivalent
+                          PDB chain IDs.
+                          Required
+                          
+    -s filename           SIFTS file mapping PDB chains to Uniprot 
+                          accession codes.  
+                          
+    -v                    Verbose.
+                          Optional
+    
+  Reads a list of domain IDs and output a tab-delimited file with 
+  the domain IDs and their equivalent PDB chain IDs.
+
+END_USAGE
+    
+    exit;
+}

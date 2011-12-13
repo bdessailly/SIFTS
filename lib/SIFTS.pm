@@ -6,7 +6,8 @@ use warnings;
 
 =head1 NAME
 
-SIFTS - The great new SIFTS!
+SIFTS is a Perl Module for parsing the PDB to UniProt residue 
+mappings provided by project SIFTS at the EBI.
 
 =head1 VERSION
 
@@ -19,35 +20,73 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
+This module provides parsers to the different SIFTS mappings. 
+Several scripts also come along this module for simple command line 
+tasks. 
 
-Perhaps a little code snippet.
+=head2 Scripts
 
-    use SIFTS;
+=over 3
 
-    my $foo = SIFTS->new();
-    ...
+=item * B<domid_to_pdbchains>
 
-=head1 EXPORT
+Reads a list of CATH domain IDs from an input file and returns the 
+list of PDB chains that come from the same chain as each of these 
+domain IDs. The script is typically called as follow. Use option -h 
+for more details on options.
 
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
+  prompt# domid_to_pdbchains -i domids.dat -o domid_pdbchains.dat 
 
-=head1 SUBROUTINES/METHODS
+=back
 
-=head2 function1
+=head2 Parsers
 
-=cut
+All parser classes are under SIFTS::IO.
 
-sub function1 {
-}
+=over 3
 
-=head2 function2
+=item * B<SIFTS::IO::Text::PdbUniprot>
 
-=cut
+Parser for the text file mapping PDB chain IDs to Uniprot accession 
+codes 'pdb_chains_uniprot.lst'. 
 
-sub function2 {
-}
+=back
+
+=head2 Entity objects
+
+The following modules are used when processing the mapping data 
+files to store the information in a natural hierarchical 
+object-oriented framework.
+
+=over 3
+
+=item * B<SIFTS::Dataset>
+
+Stores a SIFTS dataset. A dataset corresponds to a set of at least
+one SIFTS::Protein object. 
+
+=item * B<SIFTS::Protein> 
+
+Stores a protein. A protein corresponds to a Uniprot entry. A 
+SIFTS::Protein objects can contain several SIFTS::Chain objects. 
+
+=item * B<SIFTS::Chain>
+
+Stores a protein chain. A protein chain corresponds to a PDB chain. 
+A SIFTS::Chain object can contain several SIFTS::Segment objects.
+
+=item * B<SIFTS::Segment>
+
+Stores a protein chain segment. A protein chain segment corresponds 
+to a continuous stretch of residues that can be mapped between the 
+PDB chain and the Uniprot entry. A SIFTS::Segment object can contain
+several SIFTS::Residue objects.
+
+=item * B<SIFTS::Residue>
+
+Stores a protein residue.   
+
+=back
 
 =head1 AUTHOR
 
