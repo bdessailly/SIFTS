@@ -33,6 +33,9 @@ Represents a SIFTS mapping dataset.
     ## dataset.
     my @sifts_proteins = ( $sifts_protein1, $sifts_protein_2 );
     $sifts_dataset->proteins( \@sifts_proteins );
+    ## do things...
+    my $sifts_proteins_aref = $sifts_dataset->proteins();
+    
     
     ## Retrieve a specific SIFTS::Protein object from the 
     ## SIFTS::Dataset.
@@ -79,8 +82,16 @@ sub proteins {
 
 =head2 get_protein
 
-=cut
+    my $sifts_protein = $sifts_dataset->get_protein( 
+        id => 'P54399', 
+    );
+    
+  SIFTS::Dataset::get_protein gets a Uniprot accession code as 
+  argument and searches the Dataset for a L<SIFTS::Protein> object 
+  with that ID. Returns the L<SIFTS::Protein> object if it finds it,
+  undef otherwise.
 
+=cut
 sub get_protein {
 }
 
