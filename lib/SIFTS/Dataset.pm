@@ -39,7 +39,7 @@ Represents a SIFTS mapping dataset.
     
     ## Retrieve a specific SIFTS::Protein object from the 
     ## SIFTS::Dataset.
-    $sifts_dataset->get_protein( id => 'P54399' )
+    $sifts_dataset->get_protein( uniacc => 'P54399' )
 
 =head1 SUBROUTINES/METHODS
 
@@ -83,7 +83,7 @@ sub proteins {
 =head2 get_protein
 
     my $sifts_protein = $sifts_dataset->get_protein( 
-        id => 'P54399', 
+        uniacc => 'P54399', 
     );
     
   SIFTS::Dataset::get_protein gets a Uniprot accession code as 
