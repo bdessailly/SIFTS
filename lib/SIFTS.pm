@@ -31,9 +31,9 @@ tasks.
 =item * B<domid_to_pdbchains>
 
 Reads a list of CATH domain IDs from an input file and returns the 
-list of PDB chains that come from the same chain as each of these 
-domain IDs. The script is typically called as follow. Use option -h 
-for more details on options.
+list of PDB chains that come from the same protein chain as each of 
+these domain IDs. The script is typically called as follow. Use 
+option -h for more details on options.
 
   prompt# domid_to_pdbchains -i domids.dat -o domid_pdbchains.dat 
 

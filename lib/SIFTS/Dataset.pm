@@ -29,13 +29,13 @@ Represents a SIFTS mapping dataset.
     my $sifts_protein = SIFTS::Protein->new();
     $sifts_dataset->add_protein( $sifts_protein );
     
-    ## Set/Get a list of SIFTS::Protein objects that constitute the 
+    ## Set a list of SIFTS::Protein objects that constitute the 
     ## dataset.
     my @sifts_proteins = ( $sifts_protein1, $sifts_protein_2 );
     $sifts_dataset->proteins( \@sifts_proteins );
-    ## do things...
+    ## Get a list of SIFTS::Protein objects that constitute the 
+    ## dataset.
     my $sifts_proteins_aref = $sifts_dataset->proteins();
-    
     
     ## Retrieve a specific SIFTS::Protein object from the 
     ## SIFTS::Dataset.

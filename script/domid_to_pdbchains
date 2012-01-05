@@ -2,11 +2,13 @@
 
 ######################################################################
 ##
-##    Reads a list of CATH domain IDs and output the domain IDs and 
-##    the different PDB chain IDs coming from the same protein.  
+##    Reads a list of CATH domain IDs and output the input domain IDs 
+##    together with the different PDB chain IDs coming from the same 
+##    protein.  
 ##
 ##    Created by Benoit H Dessailly, 2011-12-13.
 ##    Updated, 2011-12-13.
+##    Updated, 2012-01-05.
 ##
 ######################################################################
 
@@ -42,8 +44,8 @@ sub help {
     -i filename           Input file with list of domain IDs.
                           Required
                           
-    -o filename           Output file with domain IDs and equivalent
-                          PDB chain IDs.
+    -o filename           Output file with input domain IDs and 
+                          equivalent PDB chain IDs.
                           Required
                           
     -s filename           SIFTS file mapping PDB chains to Uniprot 
@@ -53,7 +55,7 @@ sub help {
                           Optional
     
   Reads a list of domain IDs and output a tab-delimited file with 
-  the domain IDs and their equivalent PDB chain IDs.
+  the input domain IDs and their equivalent PDB chain IDs.
 
 END_USAGE
     
