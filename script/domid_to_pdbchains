@@ -9,6 +9,7 @@
 ##    Created by Benoit H Dessailly, 2011-12-13.
 ##    Updated, 2011-12-13.
 ##    Updated, 2012-01-05.
+##    Updated, 2012-01-10.
 ##
 ######################################################################
 
@@ -17,13 +18,30 @@ use warnings;
 
 use File::Basename;
 use Getopt::Std;
+use IO::File;
+
+use SIFTS::IO::Text::PdbUniprot;
 
 
 ## cmd line args.
 my %arg;
-getopts( 'h', \%arg );
+getopts( 'hi:o:s:v', \%arg );
 &help if ( defined $arg{'h'} );
+die "Pass input file with -i\n"  unless ( defined $arg{'i'} );
+die "Pass output file with -o\n" unless ( defined $arg{'o'} );
+die "Pass SIFTS file with -s\n"  unless ( defined $arg{'s'} );
+my $verbose = ( defined $arg{'v'} ) ? 1 : 0;
 
+
+## Read SIFTS mapping file.
+my $sifts_dataset = read_sifts_mapping_file( $arg{'s'} );
+
+## Construct intermediate data structure which maps chain IDs to 
+## Protein IDs.
+my $chainid_uniacc_href = map_chainids_to_proteinids( $sifts_dataset );
+
+## Read input domain IDs and print output.
+map_domids_to_equivalent_chainids( $arg{'i'}, $arg{'o'}, $sifts_dataset, $chainid_uniacc_href );
 
 exit;
 
@@ -50,6 +68,7 @@ sub help {
                           
     -s filename           SIFTS file mapping PDB chains to Uniprot 
                           accession codes.  
+                          Required
                           
     -v                    Verbose.
                           Optional
@@ -60,4 +79,85 @@ sub help {
 END_USAGE
     
     exit;
+}
+
+#####################################################################
+## Read SIFTS mapping file into SIFTS dataset object.
+sub read_sifts_mapping_file {
+    my $sifts_file = shift;
+
+    my $sifts_text_parser = SIFTS::IO::Text::PdbUniprot->new();
+    my $sifts_dataset = $sifts_text_parser->read(
+        mapping_file => $sifts_file,
+    );
+
+    return $sifts_dataset;
+}
+
+#####################################################################
+## Construct intermediate object to map protein chain IDs to protein
+## IDs.
+sub map_chainids_to_proteinids {
+    my $sifts_dataset = shift;
+
+    my %chainid_uniacc;
+    for my $sifts_protein ( @{ $sifts_dataset->proteins() } ) {
+        my $uniacc = $sifts_protein->uniacc();
+        for my $sifts_chain ( @{ $sifts_protein->chains() } ) {
+            $chainid_uniacc{ $sifts_chain->pdbchainid() }{ $uniacc }++;
+        }
+    }
+    
+    return \%chainid_uniacc;
+}
+
+
+#####################################################################
+## Read input domain IDs and print output.
+sub map_domids_to_equivalent_chainids {
+    my $domids_file         = shift;
+    my $output_file         = shift;
+    my $sifts_dataset       = shift;
+    my $chainid_uniacc_href = shift;
+
+    ## Open output file.
+    my $fh_out = IO::File->new( $output_file, '>' );
+
+    ## Read input file with list of domain IDs.
+    my $fh_domids = IO::File->new( $domids_file, '<' );
+    while ( my $line = $fh_domids->getline ) {
+        chomp( my $query_domid = $line );
+    
+        if ( $verbose ) {
+            print "Processing $query_domid...\n";
+        }
+    
+        ## Define query chain ID.
+        my $query_chainid = substr( $query_domid, 0, 5 );
+    
+        ## Find SIFTS protein chains with that chain ID.
+        if ( exists $chainid_uniacc_href->{ $query_chainid } ) {
+            my $uniaccs_href 
+                = $chainid_uniacc_href->{ $query_chainid };
+        
+            ## Get all other chain IDs for that protein chain.
+            my @matching_chainids;
+            for my $uniacc ( keys %{ $uniaccs_href } ) {
+                my $sifts_protein = $sifts_dataset->get_protein( 
+                    uniacc => $uniacc, 
+                );
+            
+                for my $sifts_chain ( @{ $sifts_protein->chains() } ) {
+                    push( @matching_chainids, $sifts_chain->pdbchainid );
+                }
+            }
+        }
+    
+        ## Print out.
+        print $fh_out $query_domid, "\t", 
+                      join( ',', @matching_chainids ), "\n";
+    }
+    $fh_domids->close;
+
+    $fh_out->close;
 }

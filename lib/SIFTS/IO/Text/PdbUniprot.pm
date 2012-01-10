@@ -4,6 +4,9 @@ use 5.006;
 use strict;
 use warnings;
 
+use Carp;
+use IO::File;
+
 =head1 NAME
 
 SIFTS::IO::Text::PdbUniprot - Parser for text file 
@@ -44,6 +47,13 @@ codes.
 
 =cut
 sub new {
+    my $class = shift;
+
+    my $self = {};
+    
+    bless( $self, $class );
+
+    return $self;
 }
 
 =head2 read
@@ -58,6 +68,36 @@ sub new {
 
 =cut
 sub read {
+    my $self = shift;
+    my %arg  = @_;
+    
+    confess "Missing mandatory argument 'mapping_file'.\n"
+        unless ( exists $arg{'mapping_file'} );
+
+    my $fh_mapping = IO::File->new( $arg{'mapping_file'}, '<' );
+    while ( my $line = $fh_mapping->getline ) {
+        chomp $line;
+        
+        ## Skip header line.
+        if ( $line =~ /^PDB\tCHAIN\tSP_PRIMARY/ ) {
+            next;
+        }
+        
+        ## Data lines.
+        my @data_items = split (/\s+/, $line);
+        my $pdb     = $data_items[0];
+        my $chainid = $data_items[1];
+        my $uniacc  = $data_items[2];
+        my $res_beg = $data_items[3];
+        my $res_end = $data_items[4];
+        my $pdb_beg = $data_items[5];
+        my $pdb_end = $data_items[6];
+        my $sp_beg  = $data_items[7];
+        my $sp_end  = $data_items[8];
+
+        
+    }
+    $fh_mapping->close;
 }
 
 =head1 AUTHOR

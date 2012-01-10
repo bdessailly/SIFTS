@@ -4,6 +4,8 @@ use 5.006;
 use strict;
 use warnings;
 
+use Carp;
+
 =head1 NAME
 
 SIFTS::Dataset - Object representation of a SIFTS mapping dataset.
@@ -51,6 +53,14 @@ Represents a SIFTS mapping dataset.
 
 =cut
 sub new {
+    my $class = shift;
+
+    my $self = {};
+    $self->{PROTEINS} = {};
+
+    bless( $self, $class );
+
+    return $self;
 }
 
 =head2 add_protein
@@ -58,12 +68,35 @@ sub new {
     $sifts_dataset->add_protein( $sifts_protein );
     
   SIFTS::Dataset::add_protein gets a L<SIFTS::Protein> compliant 
-  object as argument for assignment. The protein will be added to 
-  the current list of Proteins in the SIFTS Dataset. Returns 1 upon
-  success, 0 upon failure.
+  object as argument for assignment. The protein should have a 
+  defined Uniprot accession. The protein will be added to the 
+  current list of Proteins in the SIFTS Dataset. Returns 1 upon
+  success.
 
 =cut
 sub add_protein {
+    my $self          = shift;
+    my $sifts_protein = shift;
+    
+    if ( ! defined $sifts_protein ) {
+        confess "Error: SIFTS::Dataset->add_protein expects a ",
+                "SIFTS protein object as argument for assignment.";
+    }
+    
+    if ( $sifts_protein->isa( 'SIFTS::Protein' ) != 1 ) {
+        confess "Error: SIFTS::Dataset->add_protein expects a ",
+                "SIFTS::Protein compliant object for assignment.";
+    }
+    
+    if ( ! defined $sifts_protein->uniacc ) {
+        confess "Error: SIFTS::Dataset->add_protein expects a ",
+                "SIFTS::Protein object with defined uniacc for ",
+                "assignment.";
+    }
+    
+    $self->{PROTEINS}{ $sifts_protein->uniacc } = $sifts_protein;
+    
+    return 1;
 }
 
 =head2 proteins
@@ -72,12 +105,45 @@ sub add_protein {
     $sifts_dataset->proteins( \@sifts_proteins );
     
   SIFTS::Dataset::proteins gets a reference to an array of 
-  L<SIFTS::Protein> compliant ojbects as argument for assignment. 
-  Always returns a reference to an array of Protein objects 
-  currently contained in the Dataset. The array may be empty.  
+  L<SIFTS::Protein> compliant ojbects as argument for assignment.
+  All proteins in the array reference should have defined uniprot
+  accession attributes. Always returns a reference to an array of 
+  Protein objects currently contained in the Dataset. The array may 
+  be empty.  
   
 =cut
 sub proteins {
+    my $self                = shift;
+    my $sifts_proteins_aref = shift;
+    
+    if ( defined $sifts_proteins_aref ) {
+        
+        for my $sifts_protein ( @{ $sifts_proteins_aref } ) {
+            
+            ## Check that protein object is SIFTS::Protein compliant.
+            if ( $sifts_protein->isa( 'SIFTS::Protein' ) != 1 ) {
+                confess "Error: attempting to add a non ", 
+                        "SIFTS::Protein compliant object into ",
+                        "SIFTS::Dataset->proteins!";
+            }
+            
+            ## Check that protein object has a defined uniacc 
+            ## attribute.
+            if ( defined $sifts_protein->uniacc() ) {
+                $self->{PROTEINS}{ $sifts_protein->uniacc() } 
+                    = $sifts_protein;
+            }
+            else {
+                confess "Error: attempting to add a SIFTS::Protein ",
+                        "object with undefined uniacc attribute ",
+                        "into SIFTS::Dataset->proteins!";
+            }
+        }
+    }
+    
+    my @proteins = values %{ $self->{PROTEINS} };
+    
+    return \@proteins;
 }
 
 =head2 get_protein
@@ -87,12 +153,23 @@ sub proteins {
     );
     
   SIFTS::Dataset::get_protein gets a Uniprot accession code as 
-  argument and searches the Dataset for a L<SIFTS::Protein> object 
-  with that ID. Returns the L<SIFTS::Protein> object if it finds it,
-  undef otherwise.
+  mandatory argument and searches the Dataset for a 
+  L<SIFTS::Protein> object with that ID. Returns the 
+  L<SIFTS::Protein> object if it finds it, undef otherwise.
 
 =cut
 sub get_protein {
+    my $self   = shift;
+    my %arg    = @_;
+
+    ## Check mandatory argument uniacc is defined.
+    confess "Missing mandatory argument uniacc.\n"
+        unless ( exists $arg{'uniacc'} );
+
+    my $protein = ( exists $self->{PROTEINS}{$arg{'uniacc'}} ) 
+             ? $self->{PROTEINS}{$arg{'uniacc'}} : undef;
+    
+    return $protein;
 }
 
 =head1 AUTHOR
