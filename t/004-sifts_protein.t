@@ -69,7 +69,7 @@ sub test_emptychain_sifts_protein {
     
     ## Is method get_chain working?
     my $returned_sifts_chain 
-        = $sifts_protein->get_chain( id => '1n3lA' );
+        = $sifts_protein->get_chain( pdbchainid => '1n3lA' );
     ok(
         defined $returned_sifts_chain,
         'Chain object was found in protein.',
@@ -100,7 +100,7 @@ sub test_emptychain_sifts_protein {
     
     ## Has the new chain been loaded into the protein object.
     my $returned_sifts_chain2
-        = $sifts_protein->get_chain( id => '1a2pA' );
+        = $sifts_protein->get_chain( pdbchainid => '1a2pA' );
     ok(
         defined $returned_sifts_chain2,
         'New chain object was found in protein.',

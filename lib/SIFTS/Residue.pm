@@ -4,6 +4,8 @@ use 5.006;
 use strict;
 use warnings;
 
+use Carp;
+
 =head1 NAME
 
 SIFTS::Residue - Object representation of a protein residue in SIFTS.
@@ -45,6 +47,16 @@ Represents a protein residue in the context of the SIFTS mapping.
 
 =cut
 sub new {
+    my $class = shift;
+
+    my $self = {};
+    $self->{PDB_SEQRES_POSN} = undef;
+    $self->{PDB_CRD_POSN}    = undef;
+    $self->{UNIPROT_POSN}    = undef;
+
+    bless( $self, $class );
+
+    return $self;
 }
 
 =head2 pdb_seqres_posn
@@ -56,11 +68,28 @@ sub new {
     my $pdb_seqres_posn = $sifts_residue->pdb_seqres_posn();
 
   SIFTS::Residue::pdb_seqres_posn gets a PDB seqres position as 
-  argument for assignment. Always returns the PDB seqres position or 
-  undef.
+  argument for assignment. The PDB seqres position should consist
+  exclusively of alphanumeric characters. Always returns the PDB 
+  seqres position or undef.
 
 =cut
 sub pdb_seqres_posn {
+    my $self = shift;
+    my $val  = shift;
+    
+    if ( defined $val ) {
+
+        ## Accepted format is a string of alphanumeric characters.
+        if ( $val =~ /^\w+$/ ) {
+            $self->{PDB_SEQRES_POSN} = $val;
+        }
+        else {
+            carp "Warning: pdb_seqres_posn not assigned due to ",
+                 "wrong format ($val).";
+        }
+    }
+    
+    return $self->{PDB_SEQRES_POSN};
 }
 
 =head2 pdb_crd_posn
@@ -72,11 +101,28 @@ sub pdb_seqres_posn {
     my $pdb_crd_posn = $sifts_residue->pdb_crd_posn();
     
   SIFTS::Residue::pdb_crd_posn gets a position from the coordinates 
-  section of a PDB entry as argument for assignment. Always returns 
-  the PDB coordinate position or undef.  
+  section of a PDB entry as argument for assignment. The PDB crd 
+  position should consist exclusively of alphanumeric characters. 
+  Always returns the PDB coordinate position or undef.
 
 =cut
 sub pdb_crd_posn {
+    my $self = shift;
+    my $val  = shift;
+    
+    if ( defined $val ) {
+
+        ## Accepted format is a string of alphanumeric characters.
+        if ( $val =~ /^\w+$/ ) {
+            $self->{PDB_CRD_POSN} = $val;
+        }
+        else {
+            carp "Warning: pdb_crd_posn not assigned due to ",
+                 "wrong format ($val).";
+        }
+    }
+    
+    return $self->{PDB_CRD_POSN};
 }
 
 =head2 uniprot_posn
@@ -88,10 +134,28 @@ sub pdb_crd_posn {
     my $uniprot_posn = $sifts_residue->uniprot_posn();
     
   SIFTS::Residue::uniprot_posn gets a Uniprot position as argument
-  for assignment. Always returns the Uniprot position or undef.
+  for assignment. The Uniprot position should consist exclusively of 
+  alphanumeric characters. Always returns the Uniprot position or 
+  undef.
 
 =cut
 sub uniprot_posn {
+    my $self = shift;
+    my $val  = shift;
+    
+    if ( defined $val ) {
+
+        ## Accepted format is a string of alphanumeric characters.
+        if ( $val =~ /^\w+$/ ) {
+            $self->{UNIPROT_POSN} = $val;
+        }
+        else {
+            carp "Warning: uniprot_posn not assigned due to ",
+                 "wrong format ($val).";
+        }
+    }
+    
+    return $self->{UNIPROT_POSN};
 }
 
 =head1 AUTHOR

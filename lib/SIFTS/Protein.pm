@@ -4,6 +4,8 @@ use 5.006;
 use strict;
 use warnings;
 
+use Carp;
+
 =head1 NAME
 
 SIFTS::Protein - Object representation of a protein in SIFTS.
@@ -42,7 +44,9 @@ Represents a protein in the context of the SIFTS mapping.
     
     ## Retrieve a SIFTS::Chain with a particular Chain ID from the 
     ## SIFTS::Protein object.
-    my $sifts_chain = $sifts_protein->get_chain( id => '1n3lA' );
+    my $sifts_chain = $sifts_protein->get_chain( 
+        pdbchainid => '1n3lA' 
+    );
 
 =head1 SUBROUTINES/METHODS
 
@@ -54,6 +58,15 @@ Represents a protein in the context of the SIFTS mapping.
 
 =cut
 sub new {
+    my $class = shift;
+
+    my $self = {};
+    $self->{UNIACC} = undef;
+    $self->{CHAINS} = {};
+
+    bless( $self, $class );
+
+    return $self;
 }
 
 =head2 uniacc
@@ -66,7 +79,23 @@ sub new {
   returns the uniprot accession code or undef.  
 
 =cut
-sub id {
+sub uniacc {
+    my $self = shift;
+    my $val  = shift;
+    
+    if ( defined $val ) {
+
+        ## Accepted format is a string of 6 alphanumeric characters.
+        if ( $val =~ /^\w{6}$/ ) {
+            $self->{UNIACC} = $val;
+        }
+        else {
+            carp "Warning: id not assigned due to wrong format ",
+                 "($val).";
+        }
+    }
+    
+    return $self->{UNIACC};
 }
 
 =head2 add_chain
@@ -76,11 +105,33 @@ sub id {
     
   SIFTS::Protein::add_chain gets a L<SIFTS::Chain> compliant object 
   as argument for assignment. The L<SIFTS::Chain> object will be 
-  added to the current list of Chains in the SIFTS Protein. Returns 
-  1 upon success, 0 upon failure. 
+  added to the current list of Chains in the SIFTS Protein. The 
+  chain should have a defined pdb chain ID. Returns 1 upon success. 
 
 =cut
 sub add_chain {
+    my $self        = shift;
+    my $sifts_chain = shift;
+    
+    if ( ! defined $sifts_chain ) {
+        confess "Error: SIFTS::Protein->add_chain expects an ",
+                "argument for assignment.";
+    }
+
+    if ( $sifts_chain->isa( 'SIFTS::Chain' ) != 1 ) {
+        confess "Error: SIFTS::Protein->add_chain only takes ",
+                "SIFTS::Chain compliant objects for assignment.";
+    }
+    
+    if ( ! defined $sifts_chain->pdbchainid ) {
+        confess "Error: SIFTS::Protein->add_chain only takes a ",
+                "SIFTS::Chain with defined PDB chain ID for ",
+                "assignment.";
+    }
+
+    $self->{CHAINS}{ $sifts_chain->pdbchainid } = $sifts_chain;
+
+    return 1;
 }
 
 =head2 chains
@@ -96,17 +147,49 @@ sub add_chain {
     
   SIFTS::Protein::chains gets a reference to an array of 
   L<SIFTS::Chain> compliant objects as argument for assignment. 
+  All chains in the array should have a defined PDB chain ID.
   Always returns a reference to an array of L<SIFTS::Chain> objects 
   contained in the Protein. The returned array may be empty.
 
 =cut
 sub chains {
+    my $self              = shift;
+    my $sifts_chains_aref = shift;
+    
+    if ( defined $sifts_chains_aref ) {
+        
+        for my $sifts_chain ( @{ $sifts_chains_aref } ) {
+            
+            ## Check that chain object is SIFTS::Chain compliant.
+            if ( $sifts_chain->isa( 'SIFTS::Chain' ) != 1 ) {
+                confess "Error: attempting to add a non ", 
+                        "SIFTS::Chain compliant object into ",
+                        "SIFTS::Protein->chains!";
+            }
+            
+            ## Check that chain object has a defined pdbchainid 
+            ## attribute.
+            if ( defined $sifts_chain->pdbchainid() ) {
+                $self->{CHAINS}{ $sifts_chain->pdbchainid() } 
+                    = $sifts_chain;
+            }
+            else {
+                confess "Error: attempting to add a SIFTS::Chain ",
+                        "object with undefined pdbchainid ",
+                        "attribute into SIFTS::Protein->chains!";
+            }
+        }
+    }
+    
+    my @chains = values %{ $self->{CHAINS} };
+    
+    return \@chains;
 }
 
 =head2 get_chain
 
     my $sifts_chain = $sifts_protein->get_chain( 
-        id => '1n3lA',
+        pdbchainid => '1n3lA',
     );
     
   SIFTS::Protein::get_chain gets a PDB chain ID as argument and
@@ -116,6 +199,17 @@ sub chains {
 
 =cut
 sub get_chain {
+    my $self   = shift;
+    my %arg    = @_;
+
+    ## Check mandatory argument pdbchainid is defined.
+    confess "Missing mandatory argument pdbchainid.\n"
+        unless ( exists $arg{'pdbchainid'} );
+
+    my $chain = ( exists $self->{CHAINS}{$arg{'pdbchainid'}} ) 
+              ? $self->{CHAINS}{$arg{'pdbchainid'}} : undef;
+    
+    return $chain;
 }
 
 =head1 AUTHOR

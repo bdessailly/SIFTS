@@ -4,6 +4,8 @@ use 5.006;
 use strict;
 use warnings;
 
+use Carp;
+
 =head1 NAME
 
 SIFTS::Chain - Object representation of a protein chain in SIFTS.
@@ -55,6 +57,15 @@ Represents a protein chain in the context of the SIFTS mapping.
 
 =cut
 sub new {
+    my $class = shift;
+
+    my $self = {};
+    $self->{PDBCHAINID} = undef;
+    $self->{SEGMENTS}   = {};
+
+    bless( $self, $class );
+
+    return $self;
 }
 
 =head2 pdbchainid
@@ -68,7 +79,22 @@ sub new {
 
 =cut
 sub pdbchainid {
+    my $self = shift;
+    my $val  = shift;
+    
+    if ( defined $val ) {
 
+        ## Accepted format is a string of 5 alphanumeric characters.
+        if ( $val =~ /^\w{5}$/ ) {
+            $self->{PDBCHAINID} = $val;
+        }
+        else {
+            carp "Warning: pdbchainid not assigned due to wrong ",
+                 "format ($val).";
+        }
+    }
+    
+    return $self->{PDBCHAINID};
 }
 
 =head2 add_segment
@@ -79,10 +105,32 @@ sub pdbchainid {
   SIFTS::Chain::add_segment gets a L<SIFTS::Segment> compliant 
   object as argument for assignment. The L<SIFTS::Segment> object 
   will be added to the current list of Segments in the SIFTS Protein 
-  Chain. Returns 1 upon success, 0 upon failure. 
+  Chain. The segment should have a defined id. Returns 1 upon 
+  success. 
 
 =cut
 sub add_segment {
+    my $self          = shift;
+    my $sifts_segment = shift;
+    
+    if ( ! defined $sifts_segment ) {
+        confess "Error: SIFTS::Chain->add_segment expects an ",
+                "argument for assignment.";
+    }
+
+    if ( $sifts_segment->isa( 'SIFTS::Segment' ) != 1 ) {
+        confess "Error: SIFTS::Chain->add_segment only takes ",
+                "SIFTS::Segment compliant objects for assignment.";
+    }
+    
+    if ( ! defined $sifts_segment->id ) {
+        confess "Error: SIFTS::Chain->add_segment only takes a ",
+                "SIFTS::Segment with defined id for assignment.";
+    }
+
+    $self->{SEGMENTS}{ $sifts_segment->id } = $sifts_segment;
+
+    return 1;
 }
 
 =head2 segments
@@ -98,12 +146,42 @@ sub add_segment {
     
   SIFTS::Chain::segments gets a reference to an array of 
   L<SIFTS::Segment> compliant objects as argument for assignment. 
-  Always returns a reference to an array of L<SIFTS::Segment> 
-  objects contained in the Protein Chain. The returned array may be 
-  empty.
+  All segments in the array should have a defined id. Always returns 
+  a reference to an array of L<SIFTS::Segment> objects contained in 
+  the Protein Chain. The returned array may be empty.
 
 =cut
 sub segments {
+    my $self                = shift;
+    my $sifts_segments_aref = shift;
+    
+    if ( defined $sifts_segments_aref ) {
+        
+        for my $sifts_segment ( @{ $sifts_segments_aref } ) {
+            
+            ## Check that segment object is SIFTS::Segment compliant.
+            if ( $sifts_segment->isa( 'SIFTS::Segment' ) != 1 ) {
+                confess "Error: attempting to add a non ", 
+                        "SIFTS::Segment compliant object into ",
+                        "SIFTS::Chain->segments!";
+            }
+            
+            ## Check that segment object has a defined id attribute.
+            if ( defined $sifts_segment->id() ) {
+                $self->{SEGMENTS}{ $sifts_segment->id() } 
+                    = $sifts_segment;
+            }
+            else {
+                confess "Error: attempting to add a SIFTS::Segment ",
+                        "object with undefined id attribute into ",
+                        "SIFTS::Chain->segments!";
+            }
+        }
+    }
+    
+    my @segments = values %{ $self->{SEGMENTS} };
+    
+    return \@segments;
 }
 
 =head2 get_segment
@@ -119,6 +197,17 @@ sub segments {
 
 =cut
 sub get_segment {
+    my $self   = shift;
+    my %arg    = @_;
+
+    ## Check mandatory argument id is defined.
+    confess "Missing mandatory argument id.\n"
+        unless ( exists $arg{'id'} );
+
+    my $segment = ( exists $self->{SEGMENTS}{$arg{'id'}} ) 
+              ? $self->{SEGMENTS}{$arg{'id'}} : undef;
+    
+    return $segment;
 }
 
 =head1 AUTHOR

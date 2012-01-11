@@ -70,32 +70,105 @@ sub new {
 sub read {
     my $self = shift;
     my %arg  = @_;
-    
+
+    ## Check arguments.
     confess "Missing mandatory argument 'mapping_file'.\n"
         unless ( exists $arg{'mapping_file'} );
 
+    ## Create a new SIFTS::Dataset object.
+    my $sifts_dataset = SIFTS::Dataset->new();
+
+    ## Read file.
     my $fh_mapping = IO::File->new( $arg{'mapping_file'}, '<' );
     while ( my $line = $fh_mapping->getline ) {
         chomp $line;
-        
+
         ## Skip header line.
         if ( $line =~ /^PDB\tCHAIN\tSP_PRIMARY/ ) {
             next;
         }
-        
+
         ## Data lines.
         my @data_items = split (/\s+/, $line);
-        my $pdb     = $data_items[0];
-        my $chainid = $data_items[1];
-        my $uniacc  = $data_items[2];
-        my $res_beg = $data_items[3];
-        my $res_end = $data_items[4];
-        my $pdb_beg = $data_items[5];
-        my $pdb_end = $data_items[6];
-        my $sp_beg  = $data_items[7];
-        my $sp_end  = $data_items[8];
+        my $pdb        = $data_items[0];
+        my $chainid    = $data_items[1];
+        my $uniacc     = $data_items[2];
+        my $seqres_beg = $data_items[3];
+        my $seqres_end = $data_items[4];
+        my $pdb_beg    = $data_items[5];
+        my $pdb_end    = $data_items[6];
+        my $sp_beg     = $data_items[7];
+        my $sp_end     = $data_items[8];
 
+        ## Create new segment.
+        my $sifts_segment = SIFTS::Segment->new();
+        $sifts_segment->id( 
+            "${pdb}${chainid}_${seqres_beg}${seqres_end}" 
+        );
+
+        ## Create segment start residue.
+        my $sifts_start_residue = SIFTS::Residue->new();
+        $sifts_start_residue->pdb_seqres_posn( $seqres_beg );
+        $sifts_start_residue->pdb_crd_posn( $pdb_beg );
+        $sifts_start_residue->uniprot_posn( $sp_beg );
+        $sifts_segment->start_residue( $sifts_start_residue );
+
+        ## Create segment stop residue.
+        my $sifts_stop_residue = SIFTS::Residue->new();
+        $sifts_stop_residue->pdb_seqres_posn( $seqres_end );
+        $sifts_stop_residue->pdb_crd_posn( $pdb_end );
+        $sifts_stop_residue->uniprot_posn( $sp_end );
+        $sifts_segment->stop_residue( $sifts_stop_residue );
         
+        ## Retrieve any existing protein object with current line 
+        ## uniprot accession already exists from SIFTS::Dataset.
+        my $existing_sifts_protein = $sifts_dataset->get_protein( 
+            uniacc => $uniacc 
+        );
+        
+        ## If protein object already exists in dataset.
+        if ( defined $existing_sifts_protein ) {
+            
+            ## Retrieve any existing protein chain object with 
+            ## current line properties from existing protein object.
+            my $existing_sifts_chain 
+                = $existing_sifts_protein->get_chain(
+                    pdbchainid => "${pdb}${chainid}",
+                );
+            
+            ## If chain object already exists in protein object.
+            if ( defined $existing_sifts_chain ) {
+                
+                ## Add new segment.
+                $existing_sifts_chain->add_segment( $sifts_segment );
+            }
+
+            ## If chain object does not exist in protein object.
+            else {
+                
+                ## Create new chain.
+                my $sifts_chain = SIFTS::Chain->new();
+                $sifts_chain->pdbchainid( "${pdb}${chainid}" );
+                $sifts_chain->add_segment( $sifts_segment );
+                
+                ## Add new chain to existing protein object.
+                $existing_sifts_protein->add_chain( $sifts_chain );
+            } 
+        }
+
+        ## If protein object does not exist in dataset. 
+        else {
+            
+            ## Create new chain.
+            my $sifts_chain = SIFTS::Chain->new();
+            $sifts_chain->pdbchainid( "${pdb}${chainid}" );
+            $sifts_chain->add_segment( $sifts_segment );
+            
+            ## Create new protein object.
+            my $new_sifts_protein = SIFTS::Protein->new();
+            $new_sifts_protein->uniacc( $uniacc );
+            $new_sifts_protein->add_chain( $sifts_chain );
+        }
     }
     $fh_mapping->close;
 }

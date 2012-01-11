@@ -4,6 +4,8 @@ use 5.006;
 use strict;
 use warnings;
 
+use Carp;
+
 =head1 NAME
 
 SIFTS::Segment - Object representation of a protein chain segment in 
@@ -48,6 +50,16 @@ mapping.
 
 =cut
 sub new {
+    my $class = shift;
+
+    my $self           = {};
+    $self->{ID}        = undef;
+    $self->{START_RES} = undef;
+    $self->{STOP_RES}  = undef;
+
+    bless( $self, $class );
+
+    return $self;
 }
 
 =head2 id
@@ -61,6 +73,24 @@ sub new {
 
 =cut
 sub id {
+    my $self = shift;
+    my $val  = shift;
+    
+    if ( defined $val ) {
+
+        ## Accepted format is a string of 5 alphanumeric characters,
+        ## followed by '_', followed by alphanumeric characters, 
+        ## followed by '_', followed by alphanumeric characters.
+        if ( $val =~ /^\w{5}_\w+_\w+$/ ) {
+            $self->{ID} = $val;
+        }
+        else {
+            carp "Warning: id not assigned due to wrong format ",
+                 "($val).";
+        }
+    }
+    
+    return $self->{ID};
 }
 
 =head2 start_residue
@@ -77,6 +107,21 @@ sub id {
 
 =cut
 sub start_residue {
+    my $self      = shift;
+    my $start_res = shift;
+    
+    if ( defined $start_res ) {
+    
+        if ( $start_res->isa( 'SIFTS::Residue') != 1 ) {
+            confess "Error: SIFTS::Segment->start_residue only ",
+                    "takes SIFTS::Residue compliant objects for ",
+                    "assignment.";
+        }
+    
+        $self->{START_RES} = $start_res;
+    }
+    
+    return $self->{START_RES};
 }
 
 =head2 stop_residue
@@ -93,6 +138,21 @@ sub start_residue {
 
 =cut
 sub stop_residue {
+    my $self     = shift;
+    my $stop_res = shift;
+
+    if ( defined $stop_res ) {
+
+        if ( $stop_res->isa( 'SIFTS::Residue') != 1 ) {
+            confess "Error: SIFTS::Segment->stop_residue only ",
+                    "takes SIFTS::Residue compliant objects for ",
+                    "assignment.";
+        }
+
+        $self->{STOP_RES} = $stop_res;
+    }
+
+    return $self->{STOP_RES};
 }
 
 =head1 AUTHOR
