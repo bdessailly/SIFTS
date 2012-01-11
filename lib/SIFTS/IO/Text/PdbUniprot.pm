@@ -174,9 +174,14 @@ sub read {
             my $new_sifts_protein = SIFTS::Protein->new();
             $new_sifts_protein->uniacc( $uniacc );
             $new_sifts_protein->add_chain( $sifts_chain );
+            
+            ## Add new protein to existing dataset object.
+            $sifts_dataset->add_protein( $new_sifts_protein );
         }
     }
     $fh_mapping->close;
+    
+    return $sifts_dataset;
 }
 
 =head1 AUTHOR
