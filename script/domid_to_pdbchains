@@ -151,11 +151,11 @@ sub map_domids_to_equivalent_chainids {
                     push( @matching_chainids, $sifts_chain->pdbchainid );
                 }
             }
+
+            ## Print out.
+            print $fh_out $query_domid, "\t", 
+                          join( ',', @matching_chainids ), "\n";
         }
-    
-        ## Print out.
-        print $fh_out $query_domid, "\t", 
-                      join( ',', @matching_chainids ), "\n";
     }
     $fh_domids->close;
 

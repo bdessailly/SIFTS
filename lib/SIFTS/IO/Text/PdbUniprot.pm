@@ -7,6 +7,12 @@ use warnings;
 use Carp;
 use IO::File;
 
+use SIFTS::Dataset;
+use SIFTS::Protein;
+use SIFTS::Chain;
+use SIFTS::Segment;
+use SIFTS::Residue;
+
 =head1 NAME
 
 SIFTS::IO::Text::PdbUniprot - Parser for text file 

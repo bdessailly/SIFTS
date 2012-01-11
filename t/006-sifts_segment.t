@@ -6,6 +6,7 @@
 ##
 ##    Created by Benoit H Dessailly, 2012-01-06.
 ##    Updated, 2012-01-06.
+##    Updated, 2012-01-11.
 ##
 ######################################################################
 
@@ -19,6 +20,7 @@ use Test::More tests => 10;
 use lib "${Bin}/../lib";
 
 use SIFTS::Segment;
+use SIFTS::Residue;
 
 
 ## Test directory t/.

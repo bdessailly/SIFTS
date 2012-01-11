@@ -6,6 +6,7 @@
 ##
 ##    Created by Benoit H Dessailly, 2011-12-15.
 ##    Updated, 2011-12-15.
+##    Updated, 2012-01-11.
 ##
 ######################################################################
 
@@ -19,6 +20,7 @@ use Test::More tests => 11;
 use lib "${Bin}/../lib";
 
 use SIFTS::Dataset;
+use SIFTS::Protein;
 
 
 ## Test directory t/.
