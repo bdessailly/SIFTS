@@ -97,7 +97,7 @@ sub test_simple_sifts_segment {
         defined $ret_start_sifts_res,
         'Start residue object was found in Segment.',
     );
-    isa(
+    isa_ok(
         $ret_start_sifts_res,
         'SIFTS::Residue',
     );

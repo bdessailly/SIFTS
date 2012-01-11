@@ -109,7 +109,7 @@ sub read {
         ## Create new segment.
         my $sifts_segment = SIFTS::Segment->new();
         $sifts_segment->id( 
-            "${pdb}${chainid}_${seqres_beg}${seqres_end}" 
+            "${pdb}${chainid}_${seqres_beg}_${seqres_end}" 
         );
 
         ## Create segment start residue.
