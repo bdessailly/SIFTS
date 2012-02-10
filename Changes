@@ -3,3 +3,6 @@ Revision history for SIFTS
 0.01    Date/time
         First version, released on an unsuspecting world.
 
+0.02    2012-02-10/16:42:00 (+0900 GMT)
+        Negative residue positions are now accepted in 
+        SIFTS::Residue.

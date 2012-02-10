@@ -69,8 +69,8 @@ sub new {
 
   SIFTS::Residue::pdb_seqres_posn gets a PDB seqres position as 
   argument for assignment. The PDB seqres position should consist
-  exclusively of alphanumeric characters. Always returns the PDB 
-  seqres position or undef.
+  exclusively of alphanumeric characters, possibly preceded by a 
+  '-'. Always returns the PDB seqres position or undef.
 
 =cut
 sub pdb_seqres_posn {
@@ -80,7 +80,7 @@ sub pdb_seqres_posn {
     if ( defined $val ) {
 
         ## Accepted format is a string of alphanumeric characters.
-        if ( $val =~ /^\w+$/ ) {
+        if ( $val =~ /^-?\w+$/ ) {
             $self->{PDB_SEQRES_POSN} = $val;
         }
         else {
@@ -102,8 +102,9 @@ sub pdb_seqres_posn {
     
   SIFTS::Residue::pdb_crd_posn gets a position from the coordinates 
   section of a PDB entry as argument for assignment. The PDB crd 
-  position should consist exclusively of alphanumeric characters. 
-  Always returns the PDB coordinate position or undef.
+  position should consist exclusively of alphanumeric characters, 
+  possibly preceded by a '-'. Always returns the PDB coordinate 
+  position or undef.
 
 =cut
 sub pdb_crd_posn {
@@ -113,7 +114,7 @@ sub pdb_crd_posn {
     if ( defined $val ) {
 
         ## Accepted format is a string of alphanumeric characters.
-        if ( $val =~ /^\w+$/ ) {
+        if ( $val =~ /^-?\w+$/ ) {
             $self->{PDB_CRD_POSN} = $val;
         }
         else {
@@ -135,8 +136,8 @@ sub pdb_crd_posn {
     
   SIFTS::Residue::uniprot_posn gets a Uniprot position as argument
   for assignment. The Uniprot position should consist exclusively of 
-  alphanumeric characters. Always returns the Uniprot position or 
-  undef.
+  alphanumeric characters, possibly preceded by a '-'. Always 
+  returns the Uniprot position or undef.
 
 =cut
 sub uniprot_posn {
@@ -146,7 +147,7 @@ sub uniprot_posn {
     if ( defined $val ) {
 
         ## Accepted format is a string of alphanumeric characters.
-        if ( $val =~ /^\w+$/ ) {
+        if ( $val =~ /^-?\w+$/ ) {
             $self->{UNIPROT_POSN} = $val;
         }
         else {
