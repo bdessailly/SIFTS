@@ -6,3 +6,7 @@ Revision history for SIFTS
 0.02    2012-02-10/16:42:00 (+0900 GMT)
         Negative residue positions are now accepted in 
         SIFTS::Residue.
+        
+0.03    2012-02-23/11:17:00 (+0900 GMT)
+        domid_to_pdbchains now warns when a chain from the 
+        query file is not found in the SIFTS mapping file.

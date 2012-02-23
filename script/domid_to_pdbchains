@@ -11,6 +11,7 @@
 ##    Updated, 2012-01-05.
 ##    Updated, 2012-01-10.
 ##    Updated, 2012-01-11.
+##    Updated, 2012-02-23.
 ##
 ######################################################################
 
@@ -160,6 +161,12 @@ sub map_domids_to_equivalent_chainids {
                               sort { $a cmp $b } @matching_chainids 
                           ), 
                           "\n";
+        }
+        
+        ## Warn if the query chain ID could not be found in the 
+        ## SIFTS mapping file.
+        else {
+            warn "  Chain $query_chainid not found in SIFTS mapping.";
         }
     }
     $fh_domids->close;
