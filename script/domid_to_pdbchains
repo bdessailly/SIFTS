@@ -166,7 +166,7 @@ sub map_domids_to_equivalent_chainids {
         ## Warn if the query chain ID could not be found in the 
         ## SIFTS mapping file.
         else {
-            warn "  Chain $query_chainid not found in SIFTS mapping.";
+            warn "  $query_chainid not found in SIFTS mapping.\n"; 
         }
     }
     $fh_domids->close;
