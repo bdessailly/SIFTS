@@ -1,0 +1,112 @@
+#!/usr/bin/env perl
+
+######################################################################
+##
+##    Maps an input list of query PDB chain IDs to their 
+##    corresponding UniProt accession codes using the SIFTS mapping.
+##
+##    Created by Benoit H Dessailly, 2013-10-10.
+##    Updated, 2013-10-10.
+##
+######################################################################
+
+use strict;
+use warnings;
+
+use File::Basename;
+use Getopt::Std;
+use IO::File;
+use SIFTS::IO::Text::PdbUniprot;
+use SIFTS::Dataset;
+use SIFTS::Protein;
+use SIFTS::Chain;
+
+
+## cmd line args.
+my %arg;
+getopts( 'hvi:o:s:', \%arg );
+&help if ( defined $arg{'h'} );
+die "Pass query file with -i\n" 
+    unless ( defined $arg{'i'} );
+die "Pass SIFTS file with -s\n"
+    unless ( defined $arg{'s'} );
+die "Pass output file with -o\n"
+    unless ( defined $arg{'o'} );
+
+## Read SIFTS file using SIFTS parser.
+print "Parsing SIFTS...\n" if ( defined $arg{'v'} );
+my $sifts_text_parser = SIFTS::IO::Text::PdbUniprot->new();
+my $sifts_dataset = $sifts_text_parser->read(
+    mapping_file => $arg{'s'},
+);
+
+## Build hash mapping pdb chain ids to uniprot accession codes.
+print "Mapping IDs...\n" if ( defined $arg{'v'} );
+my %pdbchain_to_uniacc;
+for my $protein ( @{ $sifts_dataset->proteins } ) {
+    for my $pdbchain ( @{ $protein->chains } ) {
+        $pdbchain_to_uniacc{ $pdbchain->pdbchainid } 
+            = $protein->uniacc;
+    }
+}
+
+## Read input file with list of query pdb chain ids and for each, 
+## use SIFTS hash map to retrieve corresponding uniprot accession 
+## code.
+print "Reading query IDs...\n" if ( defined $arg{'v'} );
+my $fh_out = IO::File->new( $arg{'o'}, '>' );
+my $fh_inp = IO::File->new( $arg{'i'}, '<' );
+while ( my $line = $fh_inp->getline ) {
+    chomp $line;
+
+    my $query_pdbchainid = $line;
+
+    if ( defined $pdbchain_to_uniacc{ $query_pdbchainid } ) {
+        print $fh_out $query_pdbchainid, "\t",
+                      $pdbchain_to_uniacc{ $query_pdbchainid }, "\n";
+    }
+    else {
+        print STDERR "Could not find a UniProt accession code for ",
+                     $query_pdbchainid, "\n";
+    }
+}
+$fh_inp->close;
+$fh_out->close;
+
+exit;
+
+
+######################################################################
+## Output usage message.
+sub help {
+    my $script = basename $0;
+    
+    print <<"END_USAGE";
+    
+  Usage: $script [Options]
+  
+  Options:
+  
+    -h                    Output usage message.
+    
+    -i filename           Input file with list of query PDB chain 
+                          IDs.
+                          Required
+
+    -s filename           SIFTS mapping file.
+                          Required
+
+    -o filename           Output file.
+                          Required
+
+    -v                    Verbose.
+                          Optional
+
+  Maps an input list of query PDB chain IDs to their 
+  corresponding UniProt accession codes using the SIFTS mapping.
+  
+
+END_USAGE
+    
+    exit;
+}

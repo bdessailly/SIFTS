@@ -11,11 +11,11 @@ mappings provided by project SIFTS at the EBI.
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 
 =head1 SYNOPSIS
@@ -36,6 +36,18 @@ these domain IDs. The script is typically called as follow. Use
 option -h for more details on options.
 
   prompt# domid_to_pdbchains -i domids.dat -o domid_pdbchains.dat 
+
+=item * B<pdbchain_to_uniacc>
+
+Maps an input list of query PDB chain IDs to their corresponding 
+UniProt accession codes using the SIFTS mapping. Use option -h for
+more details on options. The script is typically called as follow.
+
+  prompt# pdbchain_to_uniacc \
+              -i pdbchains.dat \
+              -s pdb_chain_uniprot.lst \
+              -o pdbchain_uniacc.dat \
+              -v
 
 =back
 
